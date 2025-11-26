@@ -1,0 +1,26 @@
+{
+  "name": "Source",
+  "tree": {
+    "$className": "DataModel",
+
+    "ReplicatedStorage": {
+      "Modules": {
+        "$path": "Source/Modules"
+      }
+    },
+
+    "ServerScriptService": {
+      "Server": {
+        "$path": "Source/Server"
+      }
+    },
+
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "Client": {
+          "$path": "Source/Client"
+        }
+      }
+    }
+  }
+}
