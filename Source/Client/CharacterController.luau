@@ -194,6 +194,26 @@ local function InitializeAttributes(): ()
     LocalPlayer:SetAttribute("Health", 100)
 end
 
+local function HitAnimation(Character: Model): ()
+	task.spawn(function(): ()
+	    if not Character then
+			return
+		end
+
+		local Highlight = Character:FindFirstChild("HitAnimation") or Instance.new("Highlight", Character)
+		Highlight.FillTransparency = 1
+		Highlight.OutlineTransparency = 1
+		Highlight.FillColor = Color3.fromRGB(222, 66, 23)
+		Highlight.Name = 'HitAnimation'
+
+		TweenService:Create(Highlight, TweenInfo.new(1/6), {FillTransparency = 0.3}):Play()
+		task.wait(1/6)
+		TweenService:Create(Highlight, TweenInfo.new(1/6), {FillTransparency = 1}):Play()
+		task.wait(1/6)
+		Highlight:Destroy()
+	end)
+end
+
 local function TakeDamage(Damage: number): ()
 	-- Calculations
     local MaxHealth = 100
@@ -216,22 +236,10 @@ local function TakeDamage(Damage: number): ()
     
 	-- Hit animation
 	local Character = LocalPlayer.Character
-
-	task.spawn(function()
-		if Character then
-			local Highlight = Character:FindFirstChild("HitAnimation") or Instance.new("Highlight", Character)
-			Highlight.FillTransparency = 1
-			Highlight.OutlineTransparency = 1
-			Highlight.FillColor = Color3.fromRGB(222, 66, 23)
-			Highlight.Name = 'HitAnimation'
-
-			TweenService:Create(Highlight, TweenInfo.new(1/6), {FillTransparency = 0.3}):Play()
-			task.wait(1/6)
-			TweenService:Create(Highlight, TweenInfo.new(1/6), {FillTransparency = 1}):Play()
-			task.wait(1/6)
-			Highlight:Destroy()
-		end
-	end)
+		
+	if Character then
+		HitAnimation(Character)
+	end
 
 	-- Enable immunity frame and update health attribute
 	LocalPlayer:SetAttribute("Health", NewHealth)
@@ -253,6 +261,7 @@ local function Init(): ()
 end
 
 -- Module
+CharacterController.HitAnimation = HitAnimation
 CharacterController.TakeDamage = TakeDamage
 CharacterController.Respawn = Respawn
 CharacterController.Init = Init
