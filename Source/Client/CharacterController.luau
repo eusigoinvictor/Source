@@ -12,6 +12,8 @@ local Remotes = ReplicatedStorage.Remotes
 local RemoteEvent = Remotes.RemoteEvent
 local Database = require(ReplicatedStorage.Modules.Database)
 local JumpVFX = ReplicatedStorage.Assets.VFX.Jump
+local PlayerGui = LocalPlayer.PlayerGui
+local HealthBar = PlayerGui:WaitForChild("Hud", math.huge).StatBars.HealthBar
 
 -- Functions
 local function VFXJump(Character: Model): ()
@@ -181,10 +183,69 @@ local function Respawn(): ()
 	RemoteEvent:FireServer("TeleportController", {Respawn = true})
 	task.wait(1)
 	Character:SetAttribute("Respawning", false)
+	
+	task.delay(1/6, function()
+		LocalPlayer:SetAttribute("Health", 100)
+		TweenService:Create(HealthBar.Fill, TweenInfo.new(1/6), {Size = UDim2.fromScale(1, 1)}):Play()
+	end)
+end
+
+local function InitializeAttributes(): ()
+    LocalPlayer:SetAttribute("Health", 100)
+end
+
+local function TakeDamage(Damage: number): ()
+	-- Calculations
+    local MaxHealth = 100
+    local NewHealth = LocalPlayer:GetAttribute("Health") - Damage
+    local BarPositionX = NewHealth / MaxHealth
+    
+	-- Immunity Frame Check
+    if LocalPlayer:GetAttribute("TookDamage") then
+        return
+    end
+
+	-- Prevent negative health and respawn
+    if NewHealth <= 0 then
+        NewHealth = 0
+        CharacterController.Services.CharacterController.Respawn()
+    end
+
+	-- Animate the health bar
+    TweenService:Create(HealthBar.Fill, TweenInfo.new(1/6), {Size = UDim2.fromScale(BarPositionX, 1)}):Play()
+    
+	-- Hit animation
+	local Character = LocalPlayer.Character
+
+	task.spawn(function()
+		if Character then
+			local Highlight = Character:FindFirstChild("HitAnimation") or Instance.new("Highlight", Character)
+			Highlight.FillTransparency = 1
+			Highlight.OutlineTransparency = 1
+			Highlight.FillColor = Color3.fromRGB(222, 66, 23)
+			Highlight.Name = 'HitAnimation'
+
+			TweenService:Create(Highlight, TweenInfo.new(1/6), {FillTransparency = 0.3}):Play()
+			task.wait(1/6)
+			TweenService:Create(Highlight, TweenInfo.new(1/6), {FillTransparency = 1}):Play()
+			task.wait(1/6)
+			Highlight:Destroy()
+		end
+	end)
+
+	-- Enable immunity frame and update health attribute
+	LocalPlayer:SetAttribute("Health", NewHealth)
+    LocalPlayer:SetAttribute("TookDamage", true)
+
+	-- Disable immunity frame
+    task.delay(1/3, function()
+        LocalPlayer:SetAttribute("TookDamage", false)
+    end)
 end
 
 local function Init(): ()
 	HandleDoubleJump()
+	InitializeAttributes()
 	
 	RunService.RenderStepped:Connect(function()
 		AdjustCharacter()
@@ -192,6 +253,7 @@ local function Init(): ()
 end
 
 -- Module
+CharacterController.TakeDamage = TakeDamage
 CharacterController.Respawn = Respawn
 CharacterController.Init = Init
 

@@ -15,8 +15,8 @@ local RollingBallTemplate = ReplicatedStorage.Assets.Models.RollingBall
 local Tags = {"PandoraAttract", "PandoraRepel", "Portal", "RollingBall", "Coral", "Spinner", "SharkTrajectory", "BoneDragon", "Meteor", "Base"}
 
 -- Functions
-local function AccountDamage(BasePart: BasePart): ()
-	local Character = BasePart:FindFirstAncestorWhichIsA("Model")
+local function AccountDamage(PartTouching: BasePart, BodyPart: BasePart): ()
+	local Character = BodyPart:FindFirstAncestorWhichIsA("Model")
 	local Player = Players:GetPlayerFromCharacter(Character)
 
 	if not Player then
@@ -27,7 +27,15 @@ local function AccountDamage(BasePart: BasePart): ()
 		return
 	end
 
-	MapController.Services.CombatController.TakeDamage(50)
+	MapController.Services.CharacterController.TakeDamage(50)
+	
+	if PartTouching.Name == 'Base' then
+		task.wait(1/3)
+
+		if Character.Humanoid.FloorMaterial ~= Enum.Material.Air and LocalPlayer:GetAttribute("Health") > 0 then
+			MapController.Services.CharacterController.TakeDamage(50)
+		end
+	end
 end
 
 local TrapFunctions = {
@@ -35,14 +43,18 @@ local TrapFunctions = {
 		repeat task.wait() until #PandoraAttractTrajectory:GetChildren() >= 5
 
 		PandoraAttractTrajectory.PandoraAttract:WaitForChild("Union")
-		PandoraAttractTrajectory.PandoraAttract.Union.Touched:Connect(AccountDamage)
+		PandoraAttractTrajectory.PandoraAttract.Union.Touched:Connect(function(BasePart: BasePart)
+			AccountDamage(PandoraAttractTrajectory.PandoraAttract.Union, BasePart)
+		end)
 
 		task.spawn(function(): ()
 			while PandoraAttractTrajectory.Parent do
 				local NewRepelVFX: Model = ReplicatedStorage.Assets.VFX.AttractVFX:Clone()
-				local Connection
+
 				NewRepelVFX.Parent = PandoraAttractTrajectory.Parent
-				Connection = NewRepelVFX.Hitbox.Touched:Connect(AccountDamage)
+				NewRepelVFX.Hitbox.Touched:Connect(function(BasePart: BasePart)
+					AccountDamage(NewRepelVFX.Hitbox, BasePart)
+				end)
 
 				for i=1, 25 do
 					task.wait()
@@ -58,7 +70,6 @@ local TrapFunctions = {
 					NewRepelVFX:ScaleTo(i / 25)
 				end
 
-				Connection:Disconnect()
 				NewRepelVFX:Destroy()
 
 				task.wait(2)
@@ -108,14 +119,18 @@ local TrapFunctions = {
 		repeat task.wait() until #PandoraRepelTrajectory:GetChildren() >= 5
 		
 		PandoraRepelTrajectory.PandoraRepel:WaitForChild("Union")
-		PandoraRepelTrajectory.PandoraRepel.Union.Touched:Connect(AccountDamage)
+		PandoraRepelTrajectory.PandoraRepel.Union.Touched:Connect(function(BasePart: BasePart)
+			AccountDamage(PandoraRepelTrajectory.PandoraRepel.Union, BasePart)
+		end)
 
 		task.spawn(function(): ()
 			while PandoraRepelTrajectory.Parent do
 				local NewRepelVFX: Model = ReplicatedStorage.Assets.VFX.RepelVFX:Clone()
-				local Connection
+
 				NewRepelVFX.Parent = PandoraRepelTrajectory.Parent
-				Connection = NewRepelVFX.InwardShockwave.Touched:Connect(AccountDamage)
+				NewRepelVFX.InwardShockwave.Touched:Connect(function(BasePart: BasePart)
+					AccountDamage(NewRepelVFX.InwardShockwave, BasePart)
+				end)
 
 				for i=1, 25 do
 					task.wait(0.01)
@@ -131,7 +146,6 @@ local TrapFunctions = {
 					NewRepelVFX:ScaleTo(i / 50)
 				end
 
-				Connection:Disconnect()
 				NewRepelVFX:Destroy()
 				
 				task.wait(2)
@@ -181,7 +195,9 @@ local TrapFunctions = {
 		task.spawn(function(): ()
 			local Log = Spinner:WaitForChild("Log", math.huge)
 
-			Log.Touched:Connect(AccountDamage)
+			Log.Touched:Connect(function(BasePart: BasePart)
+				AccountDamage(Log, BasePart)
+			end)
 		end)
 		
 		while Spinner.Parent do
@@ -203,7 +219,9 @@ local TrapFunctions = {
 		NewMeteor.Parent = workspace
 		
 		for _, BasePart in NewMeteor:GetChildren() do
-			BasePart.Touched:Connect(AccountDamage)
+			BasePart.Touched:Connect(function(BodyPart: BasePart)
+				AccountDamage(BasePart, BodyPart)
+			end)
 		end
 		
 		while Meteor.Parent do
@@ -236,7 +254,9 @@ local TrapFunctions = {
 		repeat task.wait() until #BoneDragon:GetChildren() >= 3
 
 		for _, BasePart in BoneDragon:GetChildren() do
-			BasePart.Touched:Connect(AccountDamage)
+			BasePart.Touched:Connect(function(BodyPart: BasePart)
+				AccountDamage(BasePart, BodyPart)
+			end)
 		end
 		
 		local Head = BoneDragon:WaitForChild("Head")
@@ -285,7 +305,9 @@ local TrapFunctions = {
 		local Shark = SharkTrajectory:WaitForChild("Shark", math.huge)
 		local Hitbox = Shark:WaitForChild("Hitbox", math.huge)
 
-		Hitbox.Touched:Connect(AccountDamage)
+		Hitbox.Touched:Connect(function(BasePart: BasePart)
+			AccountDamage(Hitbox, BasePart)
+		end)
 		
 		while SharkTrajectory.Parent do
 			local Point0 = SharkTrajectory:WaitForChild("Point0", math.huge)
@@ -321,7 +343,9 @@ local TrapFunctions = {
 	
 	['Coral'] = function(Coral: Model): ()
 		Coral:SetAttribute('InitialSize', Coral.Size)
-		Coral.Touched:Connect(AccountDamage)
+		Coral.Touched:Connect(function(BasePart: BasePart)
+			AccountDamage(Coral, BasePart)
+		end)
 		
 		task.wait(math.random(1, 6))
 
@@ -343,7 +367,9 @@ local TrapFunctions = {
 		local NewRollingBall = RollingBallTemplate:Clone()
 		NewRollingBall:PivotTo(RollingBall:GetPivot())
 		NewRollingBall.Parent = RollingBall.Parent
-		NewRollingBall.Touched:Connect(AccountDamage)
+		NewRollingBall.Touched:Connect(function(BasePart: BasePart)
+			AccountDamage(NewRollingBall, BasePart)
+		end)
 		
 		while RollingBall.Parent do
 			NewRollingBall:PivotTo(Origin)
@@ -379,7 +405,9 @@ local TrapFunctions = {
 	end,
 	
 	['Base'] = function(Base: BasePart): ()
-		Base.Touched:Connect(AccountDamage)
+		Base.Touched:Connect(function(BasePart: BasePart)
+			AccountDamage(Base, BasePart)
+		end)
 	end,
 }
 

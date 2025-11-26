@@ -80,7 +80,7 @@ local function ListenLoad(): ()
 		end
 		
 		SetLoadingScreenVisibility(true)
-		task.wait(3)
+		task.wait(2)
 		SetLoadingScreenVisibility(false)
 	end)
 end
@@ -93,7 +93,7 @@ local function Init(): ()
 	
 	SetLoadingScreenVisibility(true)
 	
-	task.wait(10)
+	task.wait(5)
 	
 	SetLoadingScreenVisibility(false)
 end
