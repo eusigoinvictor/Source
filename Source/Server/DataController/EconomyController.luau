@@ -1,3 +1,4 @@
+-- Discord: quatyzz, Roblox: holeyinone
 -- Services
 local HttpService = game:GetService("HttpService")
 local CollectionService = game:GetService("CollectionService")
