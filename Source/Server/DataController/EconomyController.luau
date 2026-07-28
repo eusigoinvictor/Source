@@ -1,4 +1,4 @@
--- Discord: quatyzz, Roblox: holeyinone, this file has less than 200 lines of code, my mistake, could you please refer to Client.CharacterController or any other file instead?
+-- Discord: quatyzz, Roblox: holeyinone, this file has less than 200 lines of code, my mistake, could you please refer to Source.Client.CharacterController or any other file instead?
 -- Services
 local HttpService = game:GetService("HttpService")
 local CollectionService = game:GetService("CollectionService")
